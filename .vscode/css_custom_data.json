@@ -8,6 +8,30 @@
     {
       "name": "@apply",
       "description": "Use the @apply directive to inline any existing utility classes into your own custom CSS."
+    },
+    {
+      "name": "@theme",
+      "description": "Use the @theme directive to define your project's theme variables."
+    },
+    {
+      "name": "@source",
+      "description": "Use the @source directive to explicitly specify source files that differ from the default detection."
+    },
+    {
+      "name": "@utility",
+      "description": "Use the @utility directive to define custom utilities."
+    },
+    {
+      "name": "@variant",
+      "description": "Use the @variant directive to define custom variants."
+    },
+    {
+      "name": "@custom-variant",
+      "description": "Use the @custom-variant directive to define custom variants (deprecated alias)."
+    },
+    {
+      "name": "@plugin",
+      "description": "Use the @plugin directive to include Tailwind CSS plugins."
     }
   ]
 }
