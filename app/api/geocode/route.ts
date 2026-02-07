@@ -1,6 +1,23 @@
 import { NextResponse } from "next/server";
 
+// Simple rate limiter: Nominatim allows 1 req/sec
+const lastRequestTime = new Map<string, number>();
+
 export async function POST(req: Request) {
+  const clientId = req.headers.get("x-forwarded-for") || "default";
+  const now = Date.now();
+  const lastTime = lastRequestTime.get(clientId) || 0;
+
+  if (now - lastTime < 1000) {
+    return NextResponse.json(
+      { error: "Please wait a moment before trying again." },
+      { status: 429 }
+    );
+  }
+
+  lastRequestTime.set(clientId, now);
+
+
   try {
     const { city } = await req.json();
 
@@ -15,14 +32,29 @@ export async function POST(req: Request) {
 
     const res = await fetch(url.toString(), {
       headers: {
-        // Nominatim asks for a UA/contact
-        "User-Agent": "natal-chart-next/1.0 (contact: you@example.com)",
+        // Nominatim requires a valid User-Agent with contact info
+        // Replace with your actual email
+        "User-Agent": "natal-chart-next/1.0 (contact: your-email@example.com)",
       },
       cache: "no-store",
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Geocoding failed." }, { status: 502 });
+      const errorText = await res.text();
+      console.error(`Nominatim API error (${res.status}):`, errorText);
+
+      // Provide more specific error messages
+      if (res.status === 429) {
+        return NextResponse.json(
+          { error: "Rate limit exceeded. Please wait a moment and try again." },
+          { status: 429 }
+        );
+      }
+
+      return NextResponse.json(
+        { error: `Geocoding failed (HTTP ${res.status}). ${errorText || "Please try again."}` },
+        { status: 502 }
+      );
     }
 
     const data = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
