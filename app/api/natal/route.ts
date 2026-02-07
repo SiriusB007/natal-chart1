@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 function parseDateTime(date: string, time: string) {
   const [y, m, d] = date.split("-").map(Number);
@@ -7,7 +7,7 @@ function parseDateTime(date: string, time: string) {
   return { year: y, month: m, day: d, hour: hh, minute: mm };
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.ASTROLOGY_API_KEY;
 
