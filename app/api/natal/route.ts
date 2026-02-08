@@ -2,33 +2,51 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = process.env.ASTROLOGY_USER_ID;
     const apiKey = process.env.ASTROLOGY_API_KEY;
 
-    if (!apiKey) {
+    if (!userId || !apiKey) {
       return NextResponse.json(
-        { error: "Missing ASTROLOGY_API_KEY" },
+        { error: "Missing ASTROLOGY_USER_ID or ASTROLOGY_API_KEY" },
         { status: 500 }
       );
     }
 
     const body = await req.json();
 
-    const { year, month, day, hour, minute, latitude, longitude } = body;
+    const { date, time, latitude, longitude } = body;
 
-    const res = await fetch("https://astrology-api.io/api/v3/planetary-positions", {
+    if (!date || !time || latitude === undefined || longitude === undefined) {
+      return NextResponse.json(
+        { error: "Missing required fields: date, time, latitude, longitude" },
+        { status: 400 }
+      );
+    }
+
+    // Parse date (format: YYYY-MM-DD)
+    const [year, month, day] = date.split("-").map(Number);
+
+    // Parse time (format: HH:MM)
+    const [hour, minute] = time.split(":").map(Number);
+
+    // Use Basic Auth with User ID as username and API Key as password
+    const authString = Buffer.from(`${userId}:${apiKey}`).toString('base64');
+
+    const res = await fetch("https://json.astrologyapi.com/v1/planets/tropical", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Basic ${authString}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        year,
-        month,
         day,
+        month,
+        year,
         hour,
-        minute,
-        latitude,
-        longitude,
+        min: minute,
+        lat: latitude,
+        lon: longitude,
+        tzone: 0, // UTC timezone, adjust as needed
       }),
     });
 

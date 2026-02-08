@@ -2,53 +2,58 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = process.env.ASTROLOGY_API_KEY;
+    const body = await req.json();
+    const { city } = body;
 
-    if (!apiKey) {
+    if (!city) {
       return NextResponse.json(
-        { error: "Missing ASTROLOGY_API_KEY" },
-        { status: 500 }
+        { error: "City name is required" },
+        { status: 400 }
       );
     }
 
-    const body = await req.json();
-
-    const {
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      latitude,
-      longitude,
-    } = body;
-
+    // Use OpenStreetMap Nominatim for geocoding (free, no API key required)
     const res = await fetch(
-      "https://astrology-api.io/api/v3/planetary-positions",
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
       {
-        method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+          "User-Agent": "Dendera-Astrology-App/1.0",
         },
-        body: JSON.stringify({
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          latitude,
-          longitude,
-        }),
       }
     );
 
+    if (!res.ok) {
+      const errorText = await res.text();
+      return NextResponse.json(
+        {
+          error: "Geocoding service error",
+          status: res.status,
+          details: errorText
+        },
+        { status: res.status }
+      );
+    }
+
     const data = await res.json();
 
-    return NextResponse.json(data);
+    if (!data || data.length === 0) {
+      return NextResponse.json(
+        { error: `Could not find coordinates for city: ${city}` },
+        { status: 404 }
+      );
+    }
+
+    const location = data[0];
+
+    return NextResponse.json({
+      latitude: parseFloat(location.lat),
+      longitude: parseFloat(location.lon),
+      displayName: location.display_name,
+    });
   } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "API request failed" },
+      { error: "Geocoding request failed", details: msg },
       { status: 500 }
     );
   }
