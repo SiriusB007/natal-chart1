@@ -76,7 +76,7 @@ export default function HomePage() {
 
   return (
     <main className="p-8 max-w-xl mx-auto space-y-4">
-      <h1 className="text-2xl font-bold">Natal Chart</h1>
+      <h1 className="text-2xl font-bold">Dendera's Charts</h1>
 
       <input
         type="date"
