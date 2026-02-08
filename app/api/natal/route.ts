@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = process.env.ASTROLOGY_USER_ID;
     const apiKey = process.env.ASTROLOGY_API_KEY;
 
-    if (!userId || !apiKey) {
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "Missing ASTROLOGY_USER_ID or ASTROLOGY_API_KEY" },
+        { error: "Missing ASTROLOGY_API_KEY" },
         { status: 500 }
       );
     }
@@ -29,24 +28,32 @@ export async function POST(req: NextRequest) {
     // Parse time (format: HH:MM)
     const [hour, minute] = time.split(":").map(Number);
 
-    // Use Basic Auth with User ID as username and API Key as password
-    const authString = Buffer.from(`${userId}:${apiKey}`).toString('base64');
-
-    const res = await fetch("https://json.astrologyapi.com/v1/planets/tropical", {
+    // V3 API uses Bearer authentication
+    const res = await fetch("https://api.astrology-api.io/api/v3/charts/natal", {
       method: "POST",
       headers: {
-        Authorization: `Basic ${authString}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        day,
-        month,
-        year,
-        hour,
-        min: minute,
-        lat: latitude,
-        lon: longitude,
-        tzone: 0, // UTC timezone, adjust as needed
+        subject: {
+          name: "User",
+          birth_data: {
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second: 0,
+            latitude,
+            longitude,
+            timezone: "UTC", // UTC timezone, adjust as needed
+          }
+        },
+        options: {
+          house_system: "P", // Placidus (most popular)
+          zodiac_system: "tropical"
+        }
       }),
     });
 
