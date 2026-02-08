@@ -10,7 +10,10 @@ export default function HomePage() {
   });
 
   const [chart, setChart] = useState<any>(null);
+  const [chartImage, setChartImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [renderFormat, setRenderFormat] = useState("svg");
+  const [chartWidth, setChartWidth] = useState(800);
 
   const update = (k: string, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -18,6 +21,7 @@ export default function HomePage() {
   async function revealChart() {
     setLoading(true);
     setChart(null);
+    setChartImage(null);
 
     try {
       const geoRes = await fetch("/api/geocode", {
@@ -44,6 +48,25 @@ export default function HomePage() {
       if (!natalRes.ok) throw new Error(natalJson.error);
 
       setChart(natalJson);
+
+      // Fetch the rendered chart image
+      const renderRes = await fetch("/api/render-natal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: form.dob,
+          time: form.time,
+          latitude: geoJson.latitude,
+          longitude: geoJson.longitude,
+          format: renderFormat,
+          width: chartWidth,
+        }),
+      });
+
+      const renderJson = await renderRes.json();
+      if (!renderRes.ok) throw new Error(renderJson.error);
+
+      setChartImage(renderJson);
     } catch (err: any) {
       alert(err.message);
     }
@@ -76,6 +99,34 @@ export default function HomePage() {
         className="border p-2 w-full"
       />
 
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Chart Format</label>
+        <select
+          value={renderFormat}
+          onChange={(e) => setRenderFormat(e.target.value)}
+          className="border p-2 w-full"
+        >
+          <option value="svg">SVG (Scalable Vector)</option>
+          <option value="png">PNG</option>
+          <option value="jpg">JPG</option>
+        </select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">
+          Chart Width: {chartWidth}px
+        </label>
+        <input
+          type="range"
+          min="400"
+          max="1200"
+          step="50"
+          value={chartWidth}
+          onChange={(e) => setChartWidth(Number(e.target.value))}
+          className="w-full"
+        />
+      </div>
+
       <button
         onClick={revealChart}
         className="bg-black text-white px-4 py-2"
@@ -83,10 +134,31 @@ export default function HomePage() {
         {loading ? "Calculating..." : "Reveal Chart"}
       </button>
 
+      {chartImage && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">Your Natal Chart</h2>
+          {chartImage.format === "svg" ? (
+            <div
+              dangerouslySetInnerHTML={{ __html: chartImage.content }}
+              className="border rounded"
+            />
+          ) : (
+            <img
+              src={`data:${chartImage.contentType};base64,${chartImage.content}`}
+              alt="Natal Chart"
+              className="border rounded"
+            />
+          )}
+        </div>
+      )}
+
       {chart && (
-        <pre className="bg-gray-100 p-4 overflow-auto">
-          {JSON.stringify(chart, null, 2)}
-        </pre>
+        <details className="bg-gray-100 p-4 overflow-auto">
+          <summary className="cursor-pointer font-medium">Chart Data (JSON)</summary>
+          <pre className="mt-2">
+            {JSON.stringify(chart, null, 2)}
+          </pre>
+        </details>
       )}
     </main>
   );
