@@ -1,11 +1,5 @@
 @import "tailwindcss";
 
-@theme {
-  /* pick your real brand hex values */
-  --color-brand-creme: #f5efe6;
-  --color-brand-ink: #0f1f16;
-  --color-brand-green: #1f7a4a;
-}
 
 :root {
   color-scheme: light;
