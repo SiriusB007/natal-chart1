@@ -32,15 +32,34 @@ export async function POST(req: NextRequest) {
       }),
     });
 
-    const data = await res.json();
-
+    // Check if response is ok before parsing
     if (!res.ok) {
+      const contentType = res.headers.get("content-type");
+      let errorDetails;
+
+      // Try to parse JSON if content-type indicates JSON
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          errorDetails = await res.json();
+        } catch {
+          errorDetails = await res.text();
+        }
+      } else {
+        // If not JSON, get the text (likely HTML error page)
+        errorDetails = await res.text();
+      }
+
       return NextResponse.json(
-        { error: "Upstream API error", status: res.status, details: data },
+        {
+          error: "Upstream API error",
+          status: res.status,
+          details: errorDetails
+        },
         { status: res.status }
       );
     }
 
+    const data = await res.json();
     return NextResponse.json(data);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
