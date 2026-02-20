@@ -16,8 +16,7 @@ export default function HomePage() {
   const [chartImage, setChartImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [renderFormat, setRenderFormat] = useState("svg");
-  const [chartWidth, setChartWidth] = useState(800);
+
 
   const starsRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
@@ -114,8 +113,7 @@ export default function HomePage() {
           time: form.time,
           latitude,
           longitude,
-          format: renderFormat,
-          width: chartWidth,
+          format: "svg",
         }),
       });
 
@@ -247,46 +245,6 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Chart Options */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">
-                    <i className="fas fa-image mr-2" />
-                    Chart Format
-                  </label>
-                  <select
-                    value={renderFormat}
-                    onChange={(e) => setRenderFormat(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white/30 transition"
-                  >
-                    <option value="svg" className="text-gray-900">
-                      SVG (Scalable Vector)
-                    </option>
-                    <option value="png" className="text-gray-900">
-                      PNG
-                    </option>
-                    <option value="jpg" className="text-gray-900">
-                      JPG
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">
-                    <i className="fas fa-arrows-alt-h mr-2" />
-                    Width: {chartWidth}px
-                  </label>
-                  <input
-                    type="range"
-                    min="400"
-                    max="1200"
-                    step="50"
-                    value={chartWidth}
-                    onChange={(e) => setChartWidth(Number(e.target.value))}
-                    className="w-full accent-purple-300 mt-2"
-                  />
-                </div>
-              </div>
 
               {/* Submit Button */}
               <button
@@ -341,18 +299,10 @@ export default function HomePage() {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && setLightboxOpen(true)}
               >
-                {chartImage.format === "svg" ? (
-                  <div
-                    dangerouslySetInnerHTML={{ __html: chartImage.content }}
-                    className="rounded-2xl overflow-hidden bg-white/10 p-4"
-                  />
-                ) : (
-                  <img
-                    src={`data:${chartImage.contentType};base64,${chartImage.content}`}
-                    alt="Natal Chart"
-                    className="rounded-2xl border border-white/20"
-                  />
-                )}
+                <div
+                  dangerouslySetInnerHTML={{ __html: chartImage.content }}
+                  className="rounded-2xl overflow-hidden bg-white/10 p-4"
+                />
                 <div className="chart-zoom-hint">
                   <i className="fas fa-search-plus" />
                   <span>Click to enlarge</span>
@@ -398,18 +348,10 @@ export default function HomePage() {
             <i className="fas fa-times" />
           </button>
           <div className="lightbox-content">
-            {chartImage.format === "svg" ? (
-              <div
-                dangerouslySetInnerHTML={{ __html: chartImage.content }}
-                className="lightbox-chart-svg"
-              />
-            ) : (
-              <img
-                src={`data:${chartImage.contentType};base64,${chartImage.content}`}
-                alt="Natal Chart – Enlarged"
-                className="lightbox-chart-img"
-              />
-            )}
+            <div
+              dangerouslySetInnerHTML={{ __html: chartImage.content }}
+              className="lightbox-chart-svg"
+            />
           </div>
           <p className="lightbox-hint">Press <kbd>Esc</kbd> or click outside to close</p>
         </div>

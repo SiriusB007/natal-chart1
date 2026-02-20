@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
         const body = await req.json();
 
-        const { date, time, latitude, longitude, format = "svg", width = 800, scale = 1.0, custom_colors } = body;
+        const { date, time, latitude, longitude, scale = 1.0, custom_colors } = body;
 
         if (!date || !time || latitude === undefined || longitude === undefined) {
             return NextResponse.json(
@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
                     timezone: "UTC",
                 }
             },
-            format,
-            width,
+            format: "svg",
+            width: 800,
             scale,
         };
 
@@ -89,26 +89,11 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Get the content type from the response
-        const contentType = res.headers.get("content-type") || "image/svg+xml";
-
-        // For SVG, return as text/JSON with the SVG content
-        if (format === "svg") {
-            const svgContent = await res.text();
-            return NextResponse.json({
-                format: "svg",
-                content: svgContent
-            });
-        }
-
-        // For binary formats (PNG, JPG, WebP, PDF), return as base64
-        const buffer = await res.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString("base64");
-
+        // Return SVG content
+        const svgContent = await res.text();
         return NextResponse.json({
-            format,
-            contentType,
-            content: base64
+            format: "svg",
+            content: svgContent
         });
 
     } catch (err: unknown) {
