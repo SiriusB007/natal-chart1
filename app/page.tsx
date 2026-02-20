@@ -15,10 +15,12 @@ export default function HomePage() {
   const [chart, setChart] = useState<any>(null);
   const [chartImage, setChartImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [renderFormat, setRenderFormat] = useState("svg");
   const [chartWidth, setChartWidth] = useState(800);
 
   const starsRef = useRef<HTMLDivElement>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null);
 
   const update = (k: string, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -42,6 +44,23 @@ export default function HomePage() {
       container.innerHTML = "";
     };
   }, []);
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+    };
+    if (lightboxOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [lightboxOpen]);
 
   async function revealChart() {
     setLoading(true);
@@ -315,7 +334,13 @@ export default function HomePage() {
                 <i className="fas fa-sun mr-3 text-yellow-200" />
                 Your Natal Chart
               </h2>
-              <div className="flex justify-center">
+              <div
+                className="flex justify-center chart-thumbnail-wrapper"
+                onClick={() => setLightboxOpen(true)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setLightboxOpen(true)}
+              >
                 {chartImage.format === "svg" ? (
                   <div
                     dangerouslySetInnerHTML={{ __html: chartImage.content }}
@@ -328,6 +353,10 @@ export default function HomePage() {
                     className="rounded-2xl border border-white/20"
                   />
                 )}
+                <div className="chart-zoom-hint">
+                  <i className="fas fa-search-plus" />
+                  <span>Click to enlarge</span>
+                </div>
               </div>
             </div>
           )}
@@ -352,6 +381,39 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+      {/* Lightbox Overlay */}
+      {lightboxOpen && chartImage && (
+        <div
+          className="lightbox-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setLightboxOpen(false);
+          }}
+          ref={lightboxRef}
+        >
+          <button
+            className="lightbox-close"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Close lightbox"
+          >
+            <i className="fas fa-times" />
+          </button>
+          <div className="lightbox-content">
+            {chartImage.format === "svg" ? (
+              <div
+                dangerouslySetInnerHTML={{ __html: chartImage.content }}
+                className="lightbox-chart-svg"
+              />
+            ) : (
+              <img
+                src={`data:${chartImage.contentType};base64,${chartImage.content}`}
+                alt="Natal Chart – Enlarged"
+                className="lightbox-chart-img"
+              />
+            )}
+          </div>
+          <p className="lightbox-hint">Press <kbd>Esc</kbd> or click outside to close</p>
+        </div>
+      )}
     </>
   );
 }

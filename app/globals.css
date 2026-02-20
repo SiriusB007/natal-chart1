@@ -119,3 +119,149 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     transform: translateY(0);
   }
 }
+
+/* ─── Chart thumbnail wrapper ─── */
+.chart-thumbnail-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 1rem;
+}
+
+.chart-thumbnail-wrapper:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(168, 130, 255, 0.35);
+}
+
+.chart-zoom-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(20, 10, 50, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.chart-thumbnail-wrapper:hover .chart-zoom-hint {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Lightbox overlay ─── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 2, 18, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: lightboxFadeIn 0.3s ease forwards;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  z-index: 10000;
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(1.1);
+}
+
+.lightbox-content {
+  max-width: 92vw;
+  max-height: 85vh;
+  overflow: auto;
+  animation: lightboxScaleIn 0.35s ease forwards;
+}
+
+.lightbox-chart-svg {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 16px;
+}
+
+.lightbox-chart-svg svg {
+  width: 100%;
+  height: auto;
+  max-height: 82vh;
+}
+
+.lightbox-chart-img {
+  max-width: 92vw;
+  max-height: 82vh;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  object-fit: contain;
+}
+
+.lightbox-hint {
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+.lightbox-hint kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+
+@keyframes lightboxFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightboxScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
