@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import CityAutocomplete from "@/components/CityAutocomplete";
 
 export default function HomePage() {
   const [form, setForm] = useState({
@@ -10,6 +11,7 @@ export default function HomePage() {
     city: "",
   });
 
+  const [geo, setGeo] = useState<{ lat: number; lon: number } | null>(null);
   const [chart, setChart] = useState<any>(null);
   const [chartImage, setChartImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -47,14 +49,26 @@ export default function HomePage() {
     setChartImage(null);
 
     try {
-      const geoRes = await fetch("/api/geocode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ city: form.city }),
-      });
+      let latitude: number;
+      let longitude: number;
 
-      const geoJson = await geoRes.json();
-      if (!geoRes.ok) throw new Error(geoJson.error);
+      if (geo) {
+        // Use coordinates from autocomplete selection
+        latitude = geo.lat;
+        longitude = geo.lon;
+      } else {
+        // Fallback: geocode the typed city name
+        const geoRes = await fetch("/api/geocode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ city: form.city }),
+        });
+
+        const geoJson = await geoRes.json();
+        if (!geoRes.ok) throw new Error(geoJson.error);
+        latitude = geoJson.latitude;
+        longitude = geoJson.longitude;
+      }
 
       const natalRes = await fetch("/api/natal", {
         method: "POST",
@@ -62,8 +76,8 @@ export default function HomePage() {
         body: JSON.stringify({
           date: form.dob,
           time: form.time,
-          latitude: geoJson.latitude,
-          longitude: geoJson.longitude,
+          latitude,
+          longitude,
         }),
       });
 
@@ -79,8 +93,8 @@ export default function HomePage() {
         body: JSON.stringify({
           date: form.dob,
           time: form.time,
-          latitude: geoJson.latitude,
-          longitude: geoJson.longitude,
+          latitude,
+          longitude,
           format: renderFormat,
           width: chartWidth,
         }),
@@ -201,14 +215,16 @@ export default function HomePage() {
                   <i className="fas fa-map-marker-alt mr-2" />
                   City of Birth
                 </label>
-                <input
-                  type="text"
-                  id="city"
-                  required
+                <CityAutocomplete
                   value={form.city}
-                  onChange={(e) => update("city", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white/30 transition"
-                  placeholder="Enter your city of birth"
+                  onChange={(city) => {
+                    update("city", city);
+                    setGeo(null); // reset if user edits after selection
+                  }}
+                  onSelect={(city, lat, lon) => {
+                    update("city", city);
+                    setGeo({ lat, lon });
+                  }}
                 />
               </div>
 
