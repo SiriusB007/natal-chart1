@@ -200,8 +200,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .lightbox-content {
-  max-width: 92vw;
-  max-height: 85vh;
+  width: 2048px;
+  max-width: 95vw;
+  max-height: 88vh;
   overflow: auto;
   animation: lightboxScaleIn 0.35s ease forwards;
 }
@@ -216,12 +217,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .lightbox-chart-svg svg {
   width: 100%;
   height: auto;
-  max-height: 82vh;
 }
 
 .lightbox-chart-img {
-  max-width: 92vw;
-  max-height: 82vh;
+  width: 100%;
   border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.15);
   object-fit: contain;
